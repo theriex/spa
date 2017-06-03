@@ -1,0 +1,12 @@
+body { background:#555555; }
+/* the image dims here match suppfuncs.js toggleImageDisplayClass */
+img { max-height:200px; max-width:320px; margin:10px;
+      box-shadow:3px 3px 2px #666666; }
+.smallimg { max-height:100px; max-width:160px; }
+.sectiondiv { clear:both; background:#fffde4; padding:5px; margin-top:8px; }
+.subdirdiv { clear:both; background:#fffde4; }
+.picblockdiv { display:inline-block; vertical-align:top; }
+.pbimgdiv {}
+.pbtxtdiv { font-size:small;  background:#fffefe; margin:0px 5px; }
+.pbauddiv {}
+iframe { margin:0; padding:0; border:none; width:200px; height:80px; }
