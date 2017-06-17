@@ -9,7 +9,7 @@ var app = (function () {
         evt.preventDefault();
         evt.stopPropagation();
         if(!img.style.maxHeight || img.style.maxHeight === "200px"
-                                 || img.style.maxHeight === "100px") {
+                                || img.style.maxHeight === "100px") {
             img.style.maxHeight = "100%";
             img.style.maxWidth = "100%"; }
         else {
@@ -23,14 +23,16 @@ var app = (function () {
 
 
     function fetchTextFileContent (tn, src) {
-        var req = new XMLHttpRequest();
+        var txt, req = new XMLHttpRequest();
         src = src.slice(0, src.lastIndexOf(".")) + ".txt";
         console.log("Fetching text URL: " + src);
         req.open("GET", src, true);
         req.onreadystatechange = function() {
             if(req.readyState === 4) {    //ready to access
                 if(req.status === 200) {  //successful request
-                    tn.innerHTML = req.responseText; } } };
+                    txt = req.responseText;
+                    txt = txt.replace(/\n\n/g, "<br/><br/>\n\n");
+                    tn.innerHTML = txt; } } };
         req.send(null);
     }
 
@@ -39,18 +41,22 @@ var app = (function () {
         var i, nodes = document.getElementsByTagName("img");
         //nodes is an HTMLCollection, not an array.  Basic iteration only.
         for(i = 0; nodes && nodes.length && i < nodes.length; i += 1) {
-            var tn;
-            nodes[i].title = nodes[i].src;
-            nodes[i].addEventListener("click", app.toggleImageDisplayClass);
-            tn = nodes[i].parentNode.nextSibling;
-            if(tn) {
-                fetchTextFileContent(tn, nodes[i].src); } }
+            var inode = nodes[i],
+                tnode = inode.parentNode.nextElementSibling;
+            if(inode.src.indexOf(".none") >= 0) {
+                inode.style.display = "None";
+                tnode.className = "textblockdiv"; }
+            else {
+                inode.title = inode.src;
+                inode.addEventListener("click", app.toggleImgDispClass); }
+            if(tnode) {
+                fetchTextFileContent(tnode, inode.src); } }
     }
 
 
     return {
         init: function () { init(); },
-        toggleImageDisplayClass: function (evt) { toggleDispClass(evt); }
+        toggleImgDispClass: function (evt) { toggleDispClass(evt); }
     };
 }());
 
