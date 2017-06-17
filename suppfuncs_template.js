@@ -32,7 +32,7 @@ var app = (function () {
                 if(req.status === 200) {  //successful request
                     txt = req.responseText;
                     txt = txt.replace(/\n\n/g, "<br/><br/>\n\n");
-                    tn.innerHTML = txt; } } };
+                    tn.innerHTML += "<br/>" + txt; } } };
         req.send(null);
     }
 
@@ -45,6 +45,7 @@ var app = (function () {
                 tnode = inode.parentNode.nextElementSibling;
             if(inode.src.indexOf(".none") >= 0) {
                 inode.style.display = "None";
+                tnode.innerHTML = "<!-- " + tnode.innerHTML + " -->";
                 tnode.className = "textblockdiv"; }
             else {
                 inode.title = inode.src;

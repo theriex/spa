@@ -48,6 +48,14 @@ var indexer = (function () {
     }
 
 
+    function logObject (pre, obj) {
+        var txt = pre || "";
+        Object.keys(obj).forEach(function (key) {
+            txt += "\n  " + key + ": " + obj[key]; });
+        console.log(txt);
+    }
+
+
     //Not using figure and figcaption because a pic is not a figure and might
     //want audio in addition to a text label.
     function picBlockHTML (pb, idx, pre) {
@@ -55,8 +63,10 @@ var indexer = (function () {
         //console.log("picBlockHTML: " + pb.base);
         if(pb.stat.isDirectory()) {
             if(pb.base.indexOf("_xsec_") >= 0) {
-                console.log("processing section dir: " + pb.path);
+                console.log("section dir: " + pb.path);
                 html += startSection("sectional " + pb.path);
+                //logObject("xsec dir", pb);
+                html += "<h2>" + pb.base.replace(/_xsec_/g, "") + "</h2>\n";
                 html += processTree(pb.path, html, pb.base + "/");
                 html += endSection("sectional " + pb.path); }
             else {

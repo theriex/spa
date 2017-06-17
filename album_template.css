@@ -1,5 +1,6 @@
 body { background:#555555; }
 h1 { text-align:center; font-size:xx-large; color:#fffde4; }
+h2 { font-size:large; margin:0px 5px; }
 /* the img and pbtxtdiv dims match suppfuncs.js toggleImageDisplayClass */
 img { max-height:200px; max-width:320px; margin:0px;
       box-shadow:3px 3px 2px #666666; }
