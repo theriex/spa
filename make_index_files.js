@@ -3,7 +3,8 @@
 var indexer = (function () {
     "use strict";
 
-    var jsdir = null,
+    var mode = "static",
+        jsdir = null,
         fs = require("fs"),
         readopt = {encoding: "utf8"},
         writeopt = {encoding: "utf8"},
@@ -13,15 +14,20 @@ var indexer = (function () {
         sectionStarted = false;
 
 
-    function getFileContents (fname) {
-        var text = "", path = jsdir + fname;
+    function getFileContents (path, conversion) {
+        var text = "";
         try {
             text = fs.readFileSync(path, readopt);
         } catch(ignore) {
+            //console.log("getFileContents: " + ignore);
             path = path.slice(0, path.lastIndexOf(".")) + "_template" +
                 path.slice(path.lastIndexOf("."));
             text = fs.readFileSync(path, readopt);
         }
+        if(conversion === "modemarker") {
+            text = text.replace(/\$MODE/g, mode); }
+        if(conversion === "txt2html") {
+            text = text.replace(/\n\n/g, "<br/><br/>\n\n"); }
         return text;
     }
 
@@ -57,7 +63,7 @@ var indexer = (function () {
 
 
     //Not using figure and figcaption because a pic is not a figure and might
-    //want audio in addition to a text label.
+    //want audio in addition to a text label.  Simple div layout.
     function picBlockHTML (pb, idx, pre) {
         var src = "", html = "";
         //console.log("picBlockHTML: " + pb.base);
@@ -75,14 +81,24 @@ var indexer = (function () {
                     "<a href=\"" + pre + pb.base + "/index.html\">" + pb.base +
                     "</a></div>";
                 html += endSection("subdirdiv"); } }
-        else {  //always write an img for latching free text retrieval
+        else {
             src = pb.base + "." + (pb.img || "none");
-            html = startSection();
+            html = startSection();  //verify section started
+            //Always write an img for latching free text retrieval.
             html += "<div class=\"picblockdiv\">\n" +
                 "  <div class=\"pbimgdiv\" id=\"pbi" + idx + "\">\n" +
-                "    <img src=\"" + pre + src + "\"/></div>\n" +
-                "  <div class=\"pbtxtdiv\" id=\"pbt" + idx + "\">" +
-                pb.base + "</div>\n";
+                "    <img src=\"" + pre + src + "\"/></div>\n";
+            if(mode === "dynamic") {  //txt file may be provided later..
+                html += "  <div class=\"pbtxtdiv\" id=\"pbt" + idx + "\">" +
+                    pb.base + "</div>\n"; }
+            else if(pb.txt) {  //include static text if given
+                src = pb.path;
+                if(pb.img) {
+                    src = src.slice(0, -1 * pb.img.length) + pb.txt; }
+                //logObject("pb with text:", pb);
+                //console.log("src: " + src);
+                html += "  <div class=\"pbtxtdiv\" id=\"pbt" + idx + "\">\n" +
+                    getFileContents(src, "txt2html") + "</div>\n"; }
             if(pb.aud) {
                 html += "<div class=\"pbauddiv\">" +
                     "<audio src=\"" + pre + pb.base + "." + pb.aud + "\">" +
@@ -137,14 +153,14 @@ var indexer = (function () {
             html = html.replace(/\$NAME/g, title);
             html = html.replace(/\$PAGEPIC/g, getPicForBlocks(pbs));
             //write css
-            html += getFileContents("album.css");
+            html += getFileContents(jsdir + "album.css");
             html += "</style>\n</head>\n<body id=\"bodyid\">\n"; }
         //write html
         html += getIndexHTML(title, pbs, contentonly, base);
         if(!contentonly) {
             //write supporting js funcs
             html += "\n<script>\n";
-            html += getFileContents("suppfuncs.js");
+            html += getFileContents(jsdir + "suppfuncs.js", "modemarker");
             html += "</script>\n</body>\n</html>\n";
             fs.writeFileSync(pics + "/index.html", html, writeopt); }
         return html;
@@ -152,6 +168,7 @@ var indexer = (function () {
 
 
     function isKnownFileExtension (ext) {
+        ext = ext.toLowerCase();
         if(picext.indexOf(ext) >= 0) {
             return true; }
         if(txtext.indexOf(ext) >= 0) {
@@ -226,17 +243,25 @@ var indexer = (function () {
     }
 
 
-    function run (root, pics) {
-        var scriptname = "make_index_files.js";
+    function run (argv) {
+        var root = argv[1],
+            pics = argv[2],
+            scriptname = "make_index_files.js";
+        if(pics && pics.indexOf("-dyn") === 0) {
+            mode = "dynamic";
+            pics = argv[3]; }
         jsdir = root.slice(0, -1 * scriptname.length);
         pics = pics || jsdir + "pics";
+        console.log("jsdir: " + jsdir);
+        console.log(" pics: " + pics);
+        console.log(" mode: " + mode);
         processTree(pics);
     }
         
 
     return {
-        run: function (root, pics) { run(root, pics); }
+        run: function (argv) { run(argv); }
     };
 }());
 
-indexer.run(process.argv[1], process.argv[2]);
+indexer.run(process.argv);

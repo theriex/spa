@@ -4,6 +4,8 @@
 var app = (function () {
     "use strict";
 
+    var mode = "$MODE";
+
     function toggleDispClass (evt) {
         var img = evt.target;
         evt.preventDefault();
@@ -38,19 +40,20 @@ var app = (function () {
 
 
     function init () {
-        var i, nodes = document.getElementsByTagName("img");
+        var inode, tnode, i, nodes = document.getElementsByTagName("img");
         //nodes is an HTMLCollection, not an array.  Basic iteration only.
         for(i = 0; nodes && nodes.length && i < nodes.length; i += 1) {
-            var inode = nodes[i],
-                tnode = inode.parentNode.nextElementSibling;
+            inode = nodes[i];
+            tnode = inode.parentNode.nextElementSibling;
             if(inode.src.indexOf(".none") >= 0) {
                 inode.style.display = "None";
-                tnode.innerHTML = "<!-- " + tnode.innerHTML + " -->";
+                if(mode === "dynamic") {  //hide placeholder text
+                    tnode.innerHTML = "<!-- " + tnode.innerHTML + " -->"; }
                 tnode.className = "textblockdiv"; }
             else {
                 inode.title = inode.src;
                 inode.addEventListener("click", app.toggleImgDispClass); }
-            if(tnode) {
+            if(tnode && mode === "dynamic") {
                 fetchTextFileContent(tnode, inode.src); } }
     }
 
