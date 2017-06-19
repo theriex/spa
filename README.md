@@ -10,15 +10,15 @@ File Interpretation:
 -------------------
 
   - All Web page compatible image files become page images.  Any file
-    with "_xnoi_" in the name is not included in the page.
+    with "&#95;xnoi&#95;" in the name is not included in the page.
 
   - A corresponding .txt file is a comment for a photo.  A corresponding
     .mp3 file is audio about a photo.  Any freestanding .txt files become
     paragraphs in the page.
 
   - Files can be organized into folders/directories.  Any folder with
-    "_xsec_" in the name gets made into a section within the parent folder
-    page.
+    "&#95;xsec&#95;" in the name gets made into a section within the parent
+    folder page.
 
 
 Basic use:
