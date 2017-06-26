@@ -18,7 +18,7 @@ File Interpretation:
 
   - Files can be organized into folders/directories.  Any folder with
     "&#95;xsec&#95;" in the name gets made into a section within the parent
-    folder page.
+    folder page.  Folders with "&#95;xntr&#95;" are linked but not traversed.
 
 
 Basic use:

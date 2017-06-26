@@ -75,6 +75,13 @@ var indexer = (function () {
                 html += "<h2>" + pb.base.replace(/_xsec_/g, "") + "</h2>\n";
                 html += processTree(pb.path, html, pb.base + "/");
                 html += endSection("sectional " + pb.path); }
+            else if(pb.base.indexOf("_xntr_") >= 0) {
+                console.log("non-traversed dir: " + pb.path);
+                html = startSection(pb.path);
+                html += "<div class=\"subdirdiv\">" +
+                    "<a href=\"" + pre + pb.base + "/index.html\">" +
+                    pb.base.replace(/_xntr_/g, "") + "</a></div>";
+                html += endSection("subdirdiv"); }
             else {
                 html = startSection(pb.path);
                 html += "<div class=\"subdirdiv\">" +
@@ -237,7 +244,8 @@ var indexer = (function () {
         //     console.log("processTree " + idx + ": " + pb.base); });
         html = makeIndex(pics, pbs, contentonly, base);
         pbs.forEach(function (pb) {
-            if(pb.stat.isDirectory() && (pb.base.indexOf("_xsec_") < 0)) {
+            if(pb.stat.isDirectory() &&(pb.base.indexOf("_xsec_") < 0) &&
+                                       (pb.base.indexOf("_xntr_") < 0)) {
                 processTree(pics + "/" + pb.base); } });
         return html;
     }
