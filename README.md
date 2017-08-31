@@ -45,5 +45,12 @@ Advanced use:
     node make_index_files.js -dynamic PICSPATH
     ```
     You will need to access index.html via a web server rather than as a
-    static file to see the text.
+    static file to see the text.  If you do not have a web server already
+    installed try 
+    ```
+    sudo npm install http-server -g
+    cd docroot
+    http-server
+    ```
+    Then open a browser to http://localhost:8080
 
