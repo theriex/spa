@@ -9,7 +9,7 @@ var indexer = (function () {
         readopt = {encoding: "utf8"},
         writeopt = {encoding: "utf8"},
         picext = ["jpg", "png", "gif"],
-        txtext = ["txt"],
+        txtext = ["txt", "html"],
         audext = ["mp3"],
         vidext = ["mp4", "webm", "ogg"],
         linkext = ["link"],
@@ -151,8 +151,7 @@ var indexer = (function () {
                                      pre + pb.base + "." + pb.vid,
                                      pb.base); }
         else if(pb.link) {
-            html += "<div class=\"pblinkdiv\">" +
-                getLinkContentHTML(pb) + "</div>"; }
+            html += getLinkContentHTML(pb); }
         return html;
     }
 
@@ -169,6 +168,18 @@ var indexer = (function () {
     }
 
 
+    function decoratorTextHTML (pb) {
+        var html, base = pb.base.replace(/_xsec_/g, "");
+        html = getFileContents(base + ".html", "failok");
+        if(!html) {
+            html = getFileContents(base + ".txt", "failok");
+            if(!html) {
+                html = base; }
+            html = "<h2>" + html + "</h2>\n"; }
+        return html;
+    }
+
+
     //Not using figure and figcaption because a pic is not a figure and might
     //want audio in addition to a text label.  Simple div layout.
     function picBlockHTML (pb, idx, pre) {
@@ -176,12 +187,12 @@ var indexer = (function () {
         //console.log("picBlockHTML: " + pb.base);
         if(pb.stat.isDirectory()) {
             if(pb.base.indexOf("_xsec_") >= 0) {
-                console.log("section dir: " + pb.path);
+                //console.log("section dir: " + pb.path);
                 html += startSection("sectional " + pb.path);
                 //logObject("xsec dir", pb);
                 html += decoratorImageHTML(pb);
-                html += "<h2>" + pb.base.replace(/_xsec_/g, "") + "</h2>\n";
-                html += processTree(pb.path, html, pb.base + "/");
+                html += decoratorTextHTML(pb);
+                html += processTree(pb, html, pb.base + "/");
                 html += endSection("sectional " + pb.path); }
             else if(pb.base.indexOf("_xntr_") >= 0) {
                 console.log("non-traversed dir: " + pb.path);
@@ -260,8 +271,8 @@ var indexer = (function () {
     }
 
 
-    function makeIndex (pics, pbs, contentonly, base) {
-        var html = "", pgt = getPageTitle(pics);
+    function makeIndex (parpb, pbs, contentonly, base) {
+        var html = "", pgt = getPageTitle(parpb.path);
         base = base || "";
         if(!contentonly) {
             html += "<!doctype html>\n" +
@@ -292,7 +303,7 @@ var indexer = (function () {
             html += getFileContents(jsdir + "suppfuncs.js", "modemarker");
             html += "</script>\n";
             html += "</body>\n</html>\n";
-            fs.writeFileSync(pics + "/index.html", html, writeopt); }
+            fs.writeFileSync(parpb.path + "/index.html", html, writeopt); }
         return html;
     }
 
@@ -322,10 +333,10 @@ var indexer = (function () {
     }
 
 
-    function addFileToBlock (pb, pics, fname) {
+    function addFileToBlock (pb, pdir, fname) {
         var ext = "";
         if(!pb.path) {
-            pb.path = pics + "/" + fname; }
+            pb.path = pdir + "/" + fname; }
         if(!pb.stat) {
             pb.stat = fs.statSync(pb.path); }
         if(fname.indexOf(".") > 0) {
@@ -343,6 +354,7 @@ var indexer = (function () {
                     pb.vid = ext; } }
             else if(linkext.indexOf(ext.toLowerCase()) >= 0) {
                 pb.link = ext; } }
+        //console.log("addFileToBlock: " + fname + ", pb.base: " + pb.base + ", pb.img: " + pb.img + ", pb.txt: " + pb.txt + ", pb.aud:" + pb.aud + ", pb.vid: " + pb.vid + ", pb.link: " + pb.link);
     }
 
 
@@ -354,6 +366,7 @@ var indexer = (function () {
                 pb.corename = pb.corename.replace(/_xntr_/g, "");
                 pbs.forEach(function (df) {
                     if(df.base === pb.corename && !df.stat.isDirectory()) {
+                        //console.log(df.path + " decorates folder " + pb.base);
                         df.folderDeco = pb;
                         pb.deco = df; } }); } });
     }
@@ -372,25 +385,25 @@ var indexer = (function () {
     }
 
 
-    function processTree (pics, contentonly, base) {
+    function processTree (parpb, contentonly, secb) {
         var html, pbd = {}, pbs = [], dirlist;
-        if(!isIndexableFilePath(pics)) {
-            console.log("no index: " + pics);
+        if(!isIndexableFilePath(parpb.path)) {
+            console.log("no index: " + parpb.path);
             return ""; }
-        dirlist = fs.readdirSync(pics);
+        dirlist = fs.readdirSync(parpb.path);
         if(!dirlist || !dirlist.length) {
-            console.log("no dir " + pics);
+            console.log("no dir " + parpb.path);
             return ""; }
-        console.log("processTree: " + pics);
-        readOptionOverrides(pics);
-        //console.log(pics + ": " + dirlist.length + " files");
+        console.log("processTree: " + parpb.path);
+        readOptionOverrides(parpb.path);
+        //console.log(parpb.path + ": " + dirlist.length + " files");
         dirlist.forEach(function (fname) {
             var bn, pb;
             bn = getBaseName(fname);
             if(bn) {  //not a hidden file
                 pb = pbd[bn] || {base:bn};
                 pbd[bn] = pb;
-                addFileToBlock(pb, pics, fname); } });
+                addFileToBlock(pb, parpb.path, fname); } });
         Object.keys(pbd).forEach(function (bn) {
             pbs.push(pbd[bn]); });
         pbs.sort(function (a, b) {
@@ -399,31 +412,34 @@ var indexer = (function () {
             if(n1 < n2) { return -1 * opts.sort; }
             if(n1 > n2) { return 1 * opts.sort; }
             return 0; });
+        // console.log("pbs dump:");
+        // pbs.forEach(function (pb) {
+        //     console.log("    " + pb.path); });
         noteFolderDecoratorFiles(pbs);
         // pbs.forEach(function (pb, idx) {
         //     console.log("processTree " + idx + ": " + pb.base); });
-        html = makeIndex(pics, pbs, contentonly, base);
+        html = makeIndex(parpb, pbs, contentonly, secb);
         pbs.forEach(function (pb) {
             if(pb.stat.isDirectory() &&(pb.base.indexOf("_xsec_") < 0) &&
                                        (pb.base.indexOf("_xntr_") < 0)) {
-                processTree(pics + "/" + pb.base); } });
+                processTree(pb); } });
         return html;
     }
 
 
     function run (argv) {
         var root = argv[1],
-            pics = argv[2],
+            pdir = argv[2],
             scriptname = "make_index_files.js";
-        if(pics && pics.indexOf("-dyn") === 0) {
+        if(pdir && pdir.indexOf("-dyn") === 0) {
             mode = "dynamic";
-            pics = argv[3]; }
+            pdir = argv[3]; }
         jsdir = root.slice(0, -1 * scriptname.length);
-        pics = pics || jsdir + "pics";
+        pdir = pdir || jsdir + "pics";
         console.log("jsdir: " + jsdir);
-        console.log(" pics: " + pics);
+        console.log(" pdir: " + pdir);
         console.log(" mode: " + mode);
-        processTree(pics);
+        processTree({path:pdir});
     }
         
 

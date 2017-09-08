@@ -151,8 +151,10 @@ var app = (function () {
         //click something to continue.
         var i, elem, child, link;
         elem = app.byId(id);  //audiodiv
-        elem = elem.parentNode;  //picblockdiv
-        elem = elem.nextElementSibling;  //next picblockdiv (if any)
+        while(elem && elem.className !== "picblockdiv") {
+            elem = elem.parentNode; }
+        if(elem) {
+            elem = elem.nextElementSibling; } //next picblockdiv (if any)
         if(elem) {
             for(i = 0; i < elem.children.length; i += 1) {
                 child = elem.children[i];
