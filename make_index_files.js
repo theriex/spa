@@ -13,7 +13,7 @@ var indexer = (function () {
         audext = ["mp3"],
         vidext = ["mp4", "webm", "ogg"],
         linkext = ["link"],
-        specialFiles = ["SPA_Title.html", "SPA_Title.txt", "SPA_Opts.txt"],
+        specialFiles = ["SPA_Opts.txt"],
         sectionStarted = false,
         haveYouTubeLink = false,
         opts = null;
@@ -98,6 +98,8 @@ var indexer = (function () {
         path = path.replace(/_xsec_/g, "");
         path = path.replace(/_/g, "");
         path = path.replace(/-/g, "");
+        path = path.replace(/"/g, "");
+        path = path.replace(/'/g, "");
         return path;
     }
 
@@ -127,6 +129,12 @@ var indexer = (function () {
     }
 
 
+    function enc (uc) {
+        return encodeURIComponent(uc).replace(/[!'()*]/g, function(c) {
+            return '%' + c.charCodeAt(0).toString(16); });
+    }
+
+
     function getPicBlockSuppHTML (pb, idx, pre) {
         var html = "", src;
         //dynamic or static caption text:
@@ -144,11 +152,11 @@ var indexer = (function () {
         //audio or video or external link:
         if(pb.aud) {
             html += getMediaPlayLink(pb.path, "audiodiv", 
-                                     pre + pb.base + "." + pb.aud,
+                                     enc(pre + pb.base + "." + pb.aud),
                                      pb.base); }
         else if(pb.vid) {
             html += getMediaPlayLink(pb.path, "videodiv",
-                                     pre + pb.base + "." + pb.vid,
+                                     enc(pre + pb.base + "." + pb.vid),
                                      pb.base); }
         else if(pb.link) {
             html += getLinkContentHTML(pb); }
@@ -234,15 +242,19 @@ var indexer = (function () {
     }
 
 
-    function getIndexHTML (title, pbs, contentonly, base) {
+    function getIndexHTML (title, pbs, contentonly, secb) {
         var html = "";
         if(!contentonly) {  //fresh file start
-            html += "<h1>" + title + "</h1>\n";
+            if(opts.titlehtml) {
+                //console.log("reading titlehtml: " + secb + opts.titlehtml);
+                html += getFileContents(secb + opts.titlehtml, "failok"); }
+            if(!html) {
+                html += "<h1>" + title + "</h1>\n"; }
             sectionStarted = false; }
         pbs.forEach(function (pb, idx) {
             //console.log("getIndexHTML " + idx + ": " + pb.path);
             if(isIndexableFilePath(pb.path) && !pb.folderDeco) {
-                html += picBlockHTML(pb, idx, base); } });
+                html += picBlockHTML(pb, idx, secb); } });
         if(!contentonly) {
             html += endSection("getindex"); }
         return html;
@@ -251,7 +263,9 @@ var indexer = (function () {
 
     function getPicForBlocks (pbs) {
         var pic = "";
-        if(pbs) {
+        if(opts.pagepic) {
+            pic = opts.pagepic; }
+        else if(pbs) {
             pbs.forEach(function (pb) {
                 if(!pic && pb.img && !pb.stat.isDirectory()) {
                     pic = pb.base + "." + pb.img; } }); }
@@ -260,20 +274,15 @@ var indexer = (function () {
 
 
     function getPageTitle (dirpath) {
-        var pgt = getFileContents(dirpath + "/SPA_Title.html", "failok");
-        if(!pgt) {
-            pgt = getFileContents(dirpath + "/SPA_Title.txt", "failok");
-            if(pgt) {
-                pgt = pgt.trim(); } }
-        if(!pgt) {
-            pgt = dirpath.slice(dirpath.lastIndexOf("/") + 1); }
-        return pgt;
+        if(opts.pagetitle) {
+            return opts.pagetitle; }
+        return dirpath.slice(dirpath.lastIndexOf("/") + 1);
     }
 
 
-    function makeIndex (parpb, pbs, contentonly, base) {
+    function makeIndex (parpb, pbs, contentonly, secb) {
         var html = "", pgt = getPageTitle(parpb.path);
-        base = base || "";
+        secb = secb || parpb.path + "/";
         if(!contentonly) {
             html += "<!doctype html>\n" +
                 "<html>\n" +
@@ -292,9 +301,13 @@ var indexer = (function () {
             html = html.replace(/\$PAGEPIC/g, getPicForBlocks(pbs));
             //write css
             html += getFileContents(jsdir + "album.css");
-            html += "</style>\n</head>\n<body id=\"bodyid\">\n"; }
+            html += "</style>\n";
+            if(opts.pagecss) {
+                html += "<link href=\"" + opts.pagecss + "\"" +
+                    " rel=\"stylesheet\" type=\"text/css\" />\n"; }
+            html += "</head>\n<body id=\"bodyid\">\n"; }
         //write html
-        html += getIndexHTML(pgt, pbs, contentonly, base);
+        html += getIndexHTML(pgt, pbs, contentonly, secb);
         if(!contentonly) {
             //write supporting js funcs
             if(haveYouTubeLink) {
@@ -380,8 +393,22 @@ var indexer = (function () {
         txt = txt.split("\n");
         txt.forEach(function (line) {
             line = line.split("=");
-            if(line[0].trim().toLowerCase() === "sort") {
-                opts.sort = -1; } });
+            switch(line[0].trim().toLowerCase()) {
+            case "sort":
+                if(line[1].trim().toLowerCase() === "reverse") {
+                    opts.sort = -1; }
+                break;
+            case "pagepic":
+                opts.pagepic = line[1].trim(); break;
+            case "pagecss":
+                opts.pagecss = line[1].trim(); break;
+            case "pagetitle":
+                opts.pagetitle = line[1].trim(); break;
+            case "titlehtml":
+                opts.titlehtml = line[1].trim(); break;
+            default: 
+                if(line[0].trim()) {
+                    console.log("Unrecognized SPA_Opts id: " + line[0]); }}});
     }
 
 

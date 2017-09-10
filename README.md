@@ -76,25 +76,28 @@ Sample associations:
 Special files:
 -------------
 
-  - SPA_Title.txt specifies the title to use for page.  SPA_Title.html
-    takes precedence and is copied in verbatim.
-
   - SPA_Opts.txt specifies options to change default behavior.  For example:
     ```
+    pagetitle=theriex's page
     sort=reverse
+    pagepic=mainpic_xnoi_.png
+    pagecss=site_xnoi_.css
+    titlehtml=sitetitle_xnoi_.html
     ```
+    If titlehtml is specified, then its contents replaces what would have
+    been displayed for the pagetitle.
 
 
 Advanced use:
 ------------
 
-  - To override the look of the generated site pages, create an album.css or
-    site.css file in the same directory as make_index_files.js
-
   - A .link file is understood as a reference to non-local media.  The name
     of the file is used as the text for the link, and the contents is
     interepreted as a media URL.  At the time of this writing, a url
     containing "youtube.com" or "youtu.be" should work.
+
+  - To override the look of the generated site pages, create an album.css
+    file in the same directory as make_index_files.js
 
   - To read the text files dynamically rather than copying the text into the
     index.html files, specify

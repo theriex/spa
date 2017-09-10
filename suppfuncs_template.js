@@ -83,12 +83,13 @@ var app = (function () {
     }
 
 
-    function getMediaTitleSpan (html) {
+    function getMediaTitleHTML (html) {
         var start = "<span class=\"mediatitle\"",
             end = "</span>",
             idx = html.indexOf(start);
         if(idx >= 0) {
-            html = html.slice(idx, html.indexOf(end) + end.length);
+            html = html.slice(idx + start.length, html.indexOf(end));
+            html = "<div class=\"mediatitle\">" + html + "</div>";
             return html; }
         return "";
     }
@@ -110,7 +111,7 @@ var app = (function () {
         if(id.indexOf("YTdiv") > 0) {
             div = app.byId(id);
             youtubeState.prev = {id:id, html:div.innerHTML};
-            div.innerHTML = getMediaTitleSpan(div.innerHTML) +
+            div.innerHTML = getMediaTitleHTML(div.innerHTML) +
                 "<div id=\"" + id + "player\"></div>";
             youtubeState.player = new YT.Player(
                 id + "player",
@@ -120,7 +121,7 @@ var app = (function () {
         else if(id.indexOf("audiodiv") > 0) {
             div = app.byId(id);
             mediaState.prev = {id:id, html:div.innerHTML};
-            div.innerHTML = getMediaTitleSpan(div.innerHTML) +
+            div.innerHTML = getMediaTitleHTML(div.innerHTML) +
                 "<audio src=\"" + url + "\"" +
                 " controls id=\"" + id + "player\"" +
                 " onended=\"app.playNextMedia('" + id + "');return false;\"" +
@@ -129,7 +130,7 @@ var app = (function () {
         else if(id.indexOf("videodiv") > 0) {
             div = app.byId(id);
             mediaState.prev = {id:id, html:div.innerHTML};
-            html = getMediaTitleSpan(div.innerHTML) +
+            html = getMediaTitleHTML(div.innerHTML) +
                 "<video controls id=\"" + id + "player\"" +
                 " onended=\"app.playNextMedia('" + id + "');return false;\"" +
                 ">";
