@@ -45,17 +45,14 @@ var app = (function () {
         //nodes is an HTMLCollection, not an array.  Basic iteration only.
         for(i = 0; nodes && nodes.length && i < nodes.length; i += 1) {
             inode = nodes[i];
+            inode.title = inode.src;
+            inode.addEventListener("click", app.toggleImgDispClass);
             tnode = inode.parentNode.nextElementSibling;
-            if(inode.src.indexOf(".none") >= 0) {
-                inode.style.display = "None";
-                if(mode === "dynamic") {  //hide placeholder text
-                    tnode.innerHTML = "<!-- " + tnode.innerHTML + " -->"; }
-                tnode.className = "textblockdiv"; }
-            else {
-                inode.title = inode.src;
-                inode.addEventListener("click", app.toggleImgDispClass); }
-            if(tnode && mode === "dynamic") {
-                fetchTextFileContent(tnode, inode.src); } }
+            if(tnode) {
+                tnode.className = "pbtxtdiv";
+                if(mode === "dynamic") {
+                    tnode.innerHTML = "<!-- " + tnode.innerHTML + " -->";
+                    fetchTextFileContent(tnode, inode.src); } } }
     }
 
 

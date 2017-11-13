@@ -135,11 +135,13 @@ var indexer = (function () {
     }
 
 
+    //By default, text is class textblockdiv. If an associated img is
+    //found during app.init, then the class is switched to pbtxtdiv.
     function getPicBlockSuppHTML (pb, idx, pre) {
         var html = "", src;
         //dynamic or static caption text:
         if(mode === "dynamic") {  //txt file may be provided later..
-            html += "  <div class=\"pbtxtdiv\" id=\"pbt" + idx + "\">" +
+            html += "  <div class=\"textblockdiv\" id=\"pbt" + idx + "\">" +
                 pb.base + "</div>\n"; }
         else if(pb.txt) {  //include static text if given
             src = pb.path;
@@ -147,7 +149,7 @@ var indexer = (function () {
                 src = src.slice(0, -1 * pb.img.length) + pb.txt; }
             //logObject("pb with text:", pb);
             //console.log("src: " + src);
-            html += "  <div class=\"pbtxtdiv\" id=\"pbt" + idx + "\">\n" +
+            html += "  <div class=\"textblockdiv\" id=\"pbt" + idx + "\">\n" +
                 getFileContents(src, "txt2html") + "</div>\n"; }
         //audio or video or external link:
         if(pb.aud) {
@@ -216,12 +218,12 @@ var indexer = (function () {
                     "</a></div>";
                 html += endSection("subdirdiv"); } }
         else {
-            src = pb.base + "." + (pb.img || "none");
+            src = pb.img? (pre + pb.base + "." + pb.img) : "";
             html = startSection();  //verify section started
-            //Always write an img for latching free text retrieval.
-            html += "<div class=\"picblockdiv\">\n" +
-                "  <div class=\"pbimgdiv\" id=\"pbi" + idx + "\">\n" +
-                "    <img src=\"" + pre + src + "\"/></div>\n";
+            html += "<div class=\"picblockdiv\">\n"; 
+            if(src) {
+                html += "  <div class=\"pbimgdiv\" id=\"pbi" + idx + "\">\n";
+                html += "    <img src=\"" + src + "\"/></div>\n"; }
             html += getPicBlockSuppHTML(pb, idx, pre);
             html += "</div> <!-- picblockdiv -->"; }
         return html + "\n";
