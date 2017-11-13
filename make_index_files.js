@@ -295,6 +295,7 @@ var indexer = (function () {
                 "<meta name=\"description\" content=\"$NAME\" />\n" +
                 "<meta name=\"viewport\"" +
                 " content=\"width=device-width, initial-scale=1.0\">\n" +
+                "<meta name=\"mobile-web-app-capable\" content=\"yes\">\n" +
                 "<title>$NAME</title>\n" +
                 "<link rel=\"icon\" href=\"$PAGEPIC\" />\n" +
                 "<link rel=\"image_src\" href=\"$PAGEPIC\" />\n" +

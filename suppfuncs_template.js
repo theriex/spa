@@ -112,7 +112,8 @@ var app = (function () {
                 "<div id=\"" + id + "player\"></div>";
             youtubeState.player = new YT.Player(
                 id + "player",
-                {width:420, height:315, videoId:ytVidId(url),
+                //can override iframe dims in css. aspect ratio is 16:9
+                {width:320, height:180, videoId:ytVidId(url),
                  events: {"onReady":ytStart,
                           "onStateChange":ytStateChange}}); }
         else if(id.indexOf("audiodiv") > 0) {
