@@ -92,8 +92,23 @@ var app = (function () {
     }
 
 
+    //Not calculating size from parent div because that can vary.  The
+    //appropriate size of a video presentation is relative to the screen.
+    function getVideoDims () {
+        var vd = {w:320, h:180, maxwp:0.9, maxhp:0.5};
+        vd.w = Math.max(vd.w, Math.round(vd.maxwp * window.innerWidth));
+        vd.h = Math.round((vd.w / 16) * 9);
+        if(vd.h > vd.maxhp * window.innerHeight) {
+            vd.h = Math.round(vd.maxhp * window.innerHeight);
+            vd.w = Math.round((vd.h / 9) * 16);
+            if(vd.w < 320) {
+                vd = {w:320, h:180}; } }
+        return vd;
+    }
+
+
     function play (id, url) {
-        var div, html;
+        var div, html, vdims;
         //clear previous playing (if any)
         if(youtubeState && youtubeState.prev) {
             youtubeState.player.clearVideo();
@@ -108,12 +123,15 @@ var app = (function () {
         if(id.indexOf("YTdiv") > 0) {
             div = app.byId(id);
             youtubeState.prev = {id:id, html:div.innerHTML};
+            vdims = getVideoDims();
             div.innerHTML = getMediaTitleHTML(div.innerHTML) +
-                "<div id=\"" + id + "player\"></div>";
+                "<div id=\"" + id + "player\"" + 
+                    " style=\"width:" + vdims.w + "px;" +
+                             "height:" + vdims.h + "px;\"></div>";
             youtubeState.player = new YT.Player(
                 id + "player",
                 //can override iframe dims in css. aspect ratio is 16:9
-                {width:320, height:180, videoId:ytVidId(url),
+                {width:vdims.w, height:vdims.h, videoId:ytVidId(url),
                  events: {"onReady":ytStart,
                           "onStateChange":ytStateChange}}); }
         else if(id.indexOf("audiodiv") > 0) {
