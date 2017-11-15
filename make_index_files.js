@@ -38,13 +38,15 @@ var indexer = (function () {
     }
 
 
-    function startSection (hardstart) {
-        var html = "";
+    function startSection (hardstart, auxclass) {
+        var html = "", divclass = "sectiondiv";
+        if(auxclass) {
+            divclass += " " + auxclass; }
         if(sectionStarted && hardstart) {  //close previous section
             sectionStarted = false;
             html += "</div> <!-- hard start " + hardstart + " -->\n"; }
         if(!sectionStarted) {
-            html += "<div class=\"sectiondiv\">\n";
+            html += "<div class=\"" + divclass + "\">\n";
             sectionStarted = true; }
         return html;
     }
@@ -150,7 +152,8 @@ var indexer = (function () {
             //logObject("pb with text:", pb);
             //console.log("src: " + src);
             html += "  <div class=\"textblockdiv\" id=\"pbt" + idx + "\">\n" +
-                getFileContents(src, "txt2html") + "</div>\n"; }
+                getFileContents(src, (src.indexOf(".html")? "" : "txt2html")) + 
+                "</div>\n"; }
         //audio or video or external link:
         if(pb.aud) {
             html += getMediaPlayLink(pb.path, "audiodiv", 
@@ -178,11 +181,11 @@ var indexer = (function () {
     }
 
 
-    function decoratorTextHTML (pb) {
+    function decoratorTextHTML (pb, pre) {
         var html, base = pb.base.replace(/_xsec_/g, "");
-        html = getFileContents(base + ".html", "failok");
+        html = getFileContents(pre + base + ".html", "failok");
         if(!html) {
-            html = getFileContents(base + ".txt", "failok");
+            html = getFileContents(pre + base + ".txt", "failok");
             if(!html) {
                 html = base; }
             html = "<h2>" + html + "</h2>\n"; }
@@ -198,21 +201,21 @@ var indexer = (function () {
         if(pb.stat.isDirectory()) {
             if(pb.base.indexOf("_xsec_") >= 0) {
                 //console.log("section dir: " + pb.path);
-                html += startSection("sectional " + pb.path);
+                html += startSection("sectional " + pb.path, "dirsectiondiv");
                 //logObject("xsec dir", pb);
                 html += decoratorImageHTML(pb);
-                html += decoratorTextHTML(pb);
+                html += decoratorTextHTML(pb, pre);
                 html += processTree(pb, html, pb.base + "/");
                 html += endSection("sectional " + pb.path); }
             else if(pb.base.indexOf("_xntr_") >= 0) {
                 console.log("non-traversed dir: " + pb.path);
-                html = startSection(pb.path);
+                html = startSection(pb.path, "subdirsectdiv");
                 html += "<div class=\"subdirdiv\">" +
                     "<a href=\"" + pre + pb.base + "/index.html\">" +
                     pb.base.replace(/_xntr_/g, "") + "</a></div>";
                 html += endSection("subdirdiv"); }
             else {
-                html = startSection(pb.path);
+                html = startSection(pb.path, "subdirsectdiv");
                 html += "<div class=\"subdirdiv\">" +
                     "<a href=\"" + pre + pb.base + "/index.html\">" + pb.base +
                     "</a></div>";
@@ -251,6 +254,7 @@ var indexer = (function () {
                 //console.log("reading titlehtml: " + secb + opts.titlehtml);
                 html += getFileContents(secb + opts.titlehtml, "failok"); }
             if(!html) {
+                //console.log("No titlehtml content, creating title");
                 html += "<h1>" + title + "</h1>\n"; }
             sectionStarted = false; }
         pbs.forEach(function (pb, idx) {
@@ -275,10 +279,25 @@ var indexer = (function () {
     }
 
 
+    function lastDir (dirpath) {
+        dirpath = dirpath || "/";
+        dirpath = dirpath.slice(dirpath.lastIndexOf("/") + 1);
+        return dirpath;
+    }
+
+
+    function lastColloquialDir (dirpath) {
+        dirpath = lastDir(dirpath);
+        if(dirpath.trim() === ".") {
+            dirpath = "root"; }
+        return dirpath;
+    }
+
+
     function getPageTitle (dirpath) {
         if(opts.pagetitle) {
             return opts.pagetitle; }
-        return dirpath.slice(dirpath.lastIndexOf("/") + 1);
+        return lastDir(dirpath);
     }
 
 
@@ -308,7 +327,8 @@ var indexer = (function () {
             if(opts.pagecss) {
                 html += "<link href=\"" + opts.pagecss + "\"" +
                     " rel=\"stylesheet\" type=\"text/css\" />\n"; }
-            html += "</head>\n<body id=\"bodyid\">\n"; }
+            html += "</head>\n<body id=\"" + lastColloquialDir(parpb.path) + 
+                "body\"><div id=\"bodycontentdiv\">\n"; }
         //write html
         html += getIndexHTML(pgt, pbs, contentonly, secb);
         if(!contentonly) {
@@ -318,7 +338,7 @@ var indexer = (function () {
             html += "\n<script>\n";
             html += getFileContents(jsdir + "suppfuncs.js", "modemarker");
             html += "</script>\n";
-            html += "</body>\n</html>\n";
+            html += "</div></body>\n</html>\n";
             fs.writeFileSync(parpb.path + "/index.html", html, writeopt); }
         return html;
     }
