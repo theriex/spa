@@ -421,17 +421,28 @@ var indexer = (function () {
                 if(line[1].trim().toLowerCase() === "reverse") {
                     opts.sort = -1; }
                 break;
-            case "pagepic":
-                opts.pagepic = line[1].trim(); break;
-            case "pagecss":
-                opts.pagecss = line[1].trim(); break;
-            case "pagetitle":
-                opts.pagetitle = line[1].trim(); break;
-            case "titlehtml":
-                opts.titlehtml = line[1].trim(); break;
+            case "after": opts.after = line[1].trim(); break;
+            case "pagepic": opts.pagepic = line[1].trim(); break;
+            case "pagecss": opts.pagecss = line[1].trim(); break;
+            case "pagetitle": opts.pagetitle = line[1].trim(); break;
+            case "titlehtml": opts.titlehtml = line[1].trim(); break;
             default: 
                 if(line[0].trim()) {
                     console.log("Unrecognized SPA_Opts id: " + line[0]); }}});
+    }
+
+
+    function folderNameSort (a, b) {
+        var n1, n2;
+        if(a.base === opts.after) {
+            return 1; }
+        if(b.base === opts.after) {
+            return -1; }
+        n1 = a.base.toLowerCase();
+        n2 = b.base.toLowerCase();
+        if(n1 < n2) { return -1 * opts.sort; }
+        if(n1 > n2) { return 1 * opts.sort; }
+        return 0;
     }
 
 
@@ -456,12 +467,7 @@ var indexer = (function () {
                 addFileToBlock(pb, parpb.path, fname); } });
         Object.keys(pbd).forEach(function (bn) {
             pbs.push(pbd[bn]); });
-        pbs.sort(function (a, b) {
-            var n1 = a.base.toLowerCase(),
-                n2 = b.base.toLowerCase();
-            if(n1 < n2) { return -1 * opts.sort; }
-            if(n1 > n2) { return 1 * opts.sort; }
-            return 0; });
+        pbs.sort(folderNameSort);
         // console.log("pbs dump:");
         // pbs.forEach(function (pb) {
         //     console.log("    " + pb.path); });

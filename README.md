@@ -80,6 +80,7 @@ Special files:
     ```
     pagetitle=theriex's page
     sort=reverse
+    after=lastfolder
     pagepic=mainpic_xnoi_.png
     pagecss=site_xnoi_.css
     titlehtml=sitetitle_xnoi_.html
