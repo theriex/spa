@@ -16,7 +16,8 @@ var indexer = (function () {
         specialFiles = ["SPA_Opts.txt"],
         sectionStarted = false,
         haveYouTubeLink = false,
-        opts = null;
+        opts = null,
+        launch = "app.init();\n";
 
 
     function getFileContents (path, conversion) {
@@ -337,6 +338,7 @@ var indexer = (function () {
                 html += getYouTubeScriptHTML(); }
             html += "\n<script>\n";
             html += getFileContents(jsdir + "suppfuncs.js", "modemarker");
+            html += launch;
             html += "</script>\n";
             html += "</div></body>\n</html>\n";
             fs.writeFileSync(parpb.path + "/index.html", html, writeopt); }
@@ -426,9 +428,12 @@ var indexer = (function () {
             case "pagecss": opts.pagecss = line[1].trim(); break;
             case "pagetitle": opts.pagetitle = line[1].trim(); break;
             case "titlehtml": opts.titlehtml = line[1].trim(); break;
+            case "oninit": launch = line[1].trim() + "();\n" + launch; break;
             default: 
                 if(line[0].trim()) {
                     console.log("Unrecognized SPA_Opts id: " + line[0]); }}});
+        // Object.keys(opts).forEach(function (key) {
+        //     console.log("    " + key + ": " + opts[key]); });
     }
 
 
@@ -476,8 +481,8 @@ var indexer = (function () {
         //     console.log("processTree " + idx + ": " + pb.base); });
         html = makeIndex(parpb, pbs, contentonly, secb);
         pbs.forEach(function (pb) {
-            if(pb.stat.isDirectory() &&(pb.base.indexOf("_xsec_") < 0) &&
-                                       (pb.base.indexOf("_xntr_") < 0)) {
+            if(pb.stat.isDirectory() && (pb.base.indexOf("_xsec_") < 0) &&
+                                        (pb.base.indexOf("_xntr_") < 0)) {
                 processTree(pb); } });
         return html;
     }

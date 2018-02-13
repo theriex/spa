@@ -53,6 +53,8 @@ var app = (function () {
                 if(mode === "dynamic") {
                     tnode.innerHTML = "<!-- " + tnode.innerHTML + " -->";
                     fetchTextFileContent(tnode, inode.src); } } }
+        if(app.oninit) {  //function name set in SPA_Opts.txt
+            app.oninit(); }
     }
 
 
@@ -66,6 +68,11 @@ var app = (function () {
             vid = vid.split("/");
             vid = vid[vid.length - 1]; }
         return vid;
+    }
+
+
+    function ytReady (event) {
+        console.log("ytReady called");
     }
 
 
@@ -94,6 +101,7 @@ var app = (function () {
 
     //Not calculating size from parent div because that can vary.  The
     //appropriate size of a video presentation is relative to the screen.
+    //Aspect ration for YouTube is 16:9
     function getVideoDims () {
         var vd = {w:320, h:180, maxwp:0.9, maxhp:0.5};
         vd.w = Math.max(vd.w, Math.round(vd.maxwp * window.innerWidth));
@@ -107,8 +115,9 @@ var app = (function () {
     }
 
 
-    function play (id, url) {
+    function play (id, url, opts) {
         var div, html, vdims;
+        opts = opts || {};
         //clear previous playing (if any)
         if(youtubeState && youtubeState.prev) {
             youtubeState.player.clearVideo();
@@ -121,6 +130,9 @@ var app = (function () {
             mediaState.prev = null; }
         //start new player
         if(id.indexOf("YTdiv") > 0) {
+            if(!youtubeState.ready) {
+                return setTimeout(function () {
+                    app.play(id, url, opts); }, 300); }
             div = app.byId(id);
             youtubeState.prev = {id:id, html:div.innerHTML};
             vdims = getVideoDims();
@@ -130,9 +142,8 @@ var app = (function () {
                              "height:" + vdims.h + "px;\"></div>";
             youtubeState.player = new YT.Player(
                 id + "player",
-                //can override iframe dims in css. aspect ratio is 16:9
                 {width:vdims.w, height:vdims.h, videoId:ytVidId(url),
-                 events: {"onReady":ytStart,
+                 events: {"onReady":(opts.loadonly? ytReady : ytStart),
                           "onStateChange":ytStateChange}}); }
         else if(id.indexOf("audiodiv") > 0) {
             div = app.byId(id);
@@ -189,9 +200,8 @@ var app = (function () {
         init: function () { init(); },
         toggleImgDispClass: function (evt) { toggleDispClass(evt); },
         byId: function (elemid) { return document.getElementById(elemid); },
-        play: function (id, url) { play(id, url); },
+        play: function (id, url, opts) { play(id, url, opts); },
         playNextMedia: function (id) { playNextMedia(id); }
     };
 }());
 
-app.init();
