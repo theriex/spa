@@ -224,12 +224,14 @@ var indexer = (function () {
         else {
             src = pb.img? (pre + pb.base + "." + pb.img) : "";
             html = startSection();  //verify section started
-            html += "<div class=\"picblockdiv\">\n"; 
             if(src) {
+                html += "<div class=\"picblockdiv\">\n"; 
                 html += "  <div class=\"pbimgdiv\" id=\"pbi" + idx + "\">\n";
-                html += "    <img src=\"" + src + "\"/></div>\n"; }
-            html += getPicBlockSuppHTML(pb, idx, pre);
-            html += "</div> <!-- picblockdiv -->"; }
+                html += "    <img src=\"" + src + "\"/></div>\n";
+                html += getPicBlockSuppHTML(pb, idx, pre);
+                html += "</div> <!-- picblockdiv -->"; }
+            else {
+                html += getPicBlockSuppHTML(pb, idx, pre); } }
         return html + "\n";
     }
 
