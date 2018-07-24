@@ -11,17 +11,12 @@ var app = (function () {
         var img = evt.target;
         evt.preventDefault();
         evt.stopPropagation();
-        if(!img.style.maxHeight || img.style.maxHeight === "200px"
-                                || img.style.maxHeight === "100px") {
+        if(!img.style.maxHeight) {
             img.style.maxHeight = "100%";
             img.style.maxWidth = "100%"; }
         else {
-            if(img.className === "smallimg") {
-                img.style.maxHeight = "100px";
-                img.style.maxWidth = "160px"; }
-            else {
-                img.style.maxHeight = "200px";
-                img.style.maxWidth = "320px"; } }
+            img.style.maxHeight = null;
+            img.style.maxWidth = null; }
     }
 
 
