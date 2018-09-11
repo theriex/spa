@@ -172,22 +172,15 @@ var app = (function () {
         //If the next item is also playable media, assume it's the next
         //track in a sequence and should be played.  Otherwise let the user
         //click something to continue.
-        var i, elem, child, link;
-        elem = app.byId(id);  //audiodiv
-        while(elem && elem.className !== "picblockdiv") {
-            elem = elem.parentNode; }
-        if(elem) {
-            elem = elem.nextElementSibling; } //next picblockdiv (if any)
-        if(elem) {
-            for(i = 0; i < elem.children.length; i += 1) {
-                child = elem.children[i];
-                if(child.tagName.toLowerCase() === "div" &&
-                   child.id && (child.id.endsWith("audiodiv") ||
-                                child.id.endsWith("YTdiv"))) {
-                    link = child.firstElementChild;
-                    if(link && link.href) {
-                        play(child.id, link.href);
-                        break; } } } }
+        var elem = app.byId(id),  //video or audio player div
+            sib = elem.nextElementSibling,
+            link;
+        if(sib && sib.tagName.toLowerCase() === "div" &&
+           sib.id && (sib.id.endsWith("audiodiv") ||
+                      sib.id.endsWith("YTdiv"))) {
+            link = sib.firstElementChild;
+            if(link && link.href) {
+                play(sib.id, link.href); } }
     }
 
 
