@@ -133,8 +133,11 @@ var indexer = (function () {
 
 
     function enc (uc) {
-        return encodeURIComponent(uc).replace(/[!'()*]/g, function(c) {
+        uc = encodeURIComponent(uc);
+        uc = uc.replace(/%2F/g, "/");  //restore encoded url path delimiters
+        uc = uc.replace(/[!'()*]/g, function(c) {
             return '%' + c.charCodeAt(0).toString(16); });
+        return uc;
     }
 
 
