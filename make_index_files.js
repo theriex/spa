@@ -153,6 +153,12 @@ var indexer = (function () {
             src = pb.path;
             if(pb.img) {
                 src = src.slice(0, -1 * pb.img.length) + pb.txt; }
+            else if(pb.aud) {
+                src = src.slice(0, -1 * pb.aud.length) + pb.txt; }
+            else if(pb.vid) {
+                src = src.slice(0, -1 * pb.vid.length) + pb.txt; }
+            else if(pb.link) {
+                src = src.slice(0, -1 * pb.link.length) + pb.txt; }
             //logObject("pb with text:", pb);
             //console.log("src: " + src);
             html += "  <div class=\"textblockdiv\" id=\"pbt" + idx + "\">\n" +
@@ -186,7 +192,9 @@ var indexer = (function () {
 
 
     function decoratorTextHTML (pb, pre) {
-        var html, base = pb.base.replace(/_xsec_/g, "");
+        var html;
+        var base = pb.base.replace(/_xsec_/g, "");
+        base = base.replace(/_orgf_/g, "");
         html = getFileContents(pre + base + ".html", "failok");
         if(!html) {
             html = getFileContents(pre + base + ".txt", "failok");
@@ -209,7 +217,7 @@ var indexer = (function () {
                 //logObject("xsec dir", pb);
                 html += decoratorImageHTML(pb);
                 html += decoratorTextHTML(pb, pre);
-                html += processTree(pb, html, pb.base + "/");
+                html += processTree(pb, html, pb.path + "/");
                 html += endSection("sectional " + pb.path); }
             else if(pb.base.indexOf("_xntr_") >= 0) {
                 console.log("non-traversed dir: " + pb.path);
@@ -218,6 +226,12 @@ var indexer = (function () {
                     "<a href=\"" + pre + pb.base + "/index.html\">" +
                     pb.base.replace(/_xntr_/g, "") + "</a></div>";
                 html += endSection("subdirdiv"); }
+            else if(pb.base.indexOf("_orgf_") >= 0) {
+                html += startSection("sectional " + pb.path, "orgfdiv");
+                html += decoratorImageHTML(pb);
+                html += decoratorTextHTML(pb, pre);
+                html += endSection("sectional " + pb.path);
+                html += processTree(pb, html, pb.path + "/"); }
             else {
                 html = startSection(pb.path, "subdirsectdiv");
                 html += "<div class=\"subdirdiv\">" +
@@ -487,6 +501,7 @@ var indexer = (function () {
         html = makeIndex(parpb, pbs, contentonly, secb);
         pbs.forEach(function (pb) {
             if(pb.stat.isDirectory() && (pb.base.indexOf("_xsec_") < 0) &&
+                                        (pb.base.indexOf("_orgf_") < 0) &&
                                         (pb.base.indexOf("_xntr_") < 0)) {
                 processTree(pb); } });
         return html;

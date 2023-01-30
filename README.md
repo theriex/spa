@@ -31,10 +31,6 @@ called myphoto.txt in the same folder, the app figures the text should be a
 caption for the photo.  The goal is to separate media organization and html
 writing so you don't have to do both at the same time.
 
-In actual fact you end up making changes to your files after seeing them in
-the browser, and you make changes to html based on your media, but it's
-still easier to separate those concerns.
-
 
 Name hacks:
 ----------
@@ -47,6 +43,10 @@ special handling:
 
   - "&#95;xsec&#95;" (section) means include the contents of this folder as
     a section in the parent page rather than writing a separate html file.
+
+  - "&#95;orgf&#95;" (organizational folder) means traverse this directory
+    and note any associated text, but don't treat it as a full section.
+    Use this for intermediate directories.
 
   - "&#95;xntr&#95;" (no traversal) means include a link to this folder but
     don't generate any html for it.
@@ -70,7 +70,23 @@ Sample associations:
     might also be a pic for a music file.  Either way.
 
   - If myfolder and myfolder.png, then the pic is an image to accompany the
-    folder link for added visual interest. 
+    folder link for added visual interest.
+
+
+Example pic file organization:
+-----------------------------
+
+```
+2022 Australia
+  00intro.txt
+  01 Sydney_orgf_
+    00intro.txt
+    20220831 Sydney_xsec_
+      00intro.txt
+      PXL_20220831_002141800.jpg
+      PXL_20220831_002141800.txt
+      ...
+```
 
 
 Special files:
