@@ -1,23 +1,24 @@
-/*jslint node, multivar, white, fudge */
+/*jslint node, white, long, nomen */
 
 var indexer = (function () {
     "use strict";
 
-    var mode = "static",
-        jsdir = null,
-        fs = require("fs"),
-        readopt = {encoding: "utf8"},
-        writeopt = {encoding: "utf8"},
-        picext = ["jpg", "png", "gif"],
-        txtext = ["txt", "html"],
-        audext = ["mp3"],
-        vidext = ["mp4", "webm", "ogg"],
-        linkext = ["link"],
-        specialFiles = ["SPA_Opts.txt"],
-        sectionStarted = false,
-        haveYouTubeLink = false,
-        opts = null,
-        launch = "app.init();\n";
+    var picsdir = "";
+    var mode = "static";
+    var jsdir = null;
+    var fs = require("fs");
+    var readopt = {encoding: "utf8"};
+    var writeopt = {encoding: "utf8"};
+    var picext = ["jpg", "jpeg", "png", "gif"];
+    var txtext = ["txt", "html"];
+    var audext = ["mp3"];
+    var vidext = ["mp4", "webm", "ogg"];
+    var linkext = ["link"];
+    var specialFiles = ["SPA_Opts.txt"];
+    var sectionStarted = false;
+    var haveYouTubeLink = false;
+    var opts = null;
+    var launch = "app.init();\n";
 
 
     function getFileContents (path, conversion) {
@@ -40,7 +41,8 @@ var indexer = (function () {
 
 
     function startSection (hardstart, auxclass) {
-        var html = "", divclass = "sectiondiv";
+        var html = "";
+        var divclass = "sectiondiv";
         if(auxclass) {
             divclass += " " + auxclass; }
         if(sectionStarted && hardstart) {  //close previous section
@@ -63,12 +65,12 @@ var indexer = (function () {
     }
 
 
-    function logObject (pre, obj) {
-        var txt = pre || "";
-        Object.keys(obj).forEach(function (key) {
-            txt += "\n  " + key + ": " + obj[key]; });
-        console.log(txt);
-    }
+    // function logObject (pre, obj) {
+    //     var txt = pre || "";
+    //     Object.keys(obj).forEach(function (key) {
+    //         txt += "\n  " + key + ": " + obj[key]; });
+    //     console.log(txt);
+    // }
 
 
     function getYouTubeScriptHTML () {
@@ -108,8 +110,8 @@ var indexer = (function () {
 
 
     function getMediaPlayLink (path, suffix, url, linkname) {
-        var html, id = idForPath(path) + suffix;
-        html = "<div id=\"" + id + "\">\n" +
+        const id = idForPath(path) + suffix;
+        const html = "<div id=\"" + id + "\">\n" +
             "<a href=\"" + url + "\"\n" +
             "   onclick=\"app.play('" + id + "','" + url + "');" +
             "return false;\">\n" +
@@ -120,11 +122,11 @@ var indexer = (function () {
 
 
     function getLinkContentHTML (pb) {
-        var html = "",
-            url = getFileContents(pb.path).trim(), 
-            linkname = pb.base;
+        var html = "";
+        var linkname = pb.base;
         if(linkname.indexOf(".") > 0) {
             linkname = linkname.slice(0, linkname.lastIndexOf(".")); }
+        const url = getFileContents(pb.path).trim();
         if(isYouTubeLink(url)) {
             haveYouTubeLink = true;
             html = getMediaPlayLink(pb.path, "YTdiv", url, linkname); }
@@ -136,7 +138,7 @@ var indexer = (function () {
         uc = encodeURIComponent(uc);
         uc = uc.replace(/%2F/g, "/");  //restore encoded url path delimiters
         uc = uc.replace(/[!'()*]/g, function(c) {
-            return '%' + c.charCodeAt(0).toString(16); });
+            return "%" + c.charCodeAt(0).toString(16); });
         return uc;
     }
 
@@ -144,7 +146,8 @@ var indexer = (function () {
     //By default, text is class textblockdiv. If an associated img is
     //found during app.init, then the class is switched to pbtxtdiv.
     function getPicBlockSuppHTML (pb, idx, pre) {
-        var html = "", src;
+        var html = "";
+        var src;
         //dynamic or static caption text:
         if(mode === "dynamic") {  //txt file may be provided later..
             html += "  <div class=\"textblockdiv\" id=\"pbt" + idx + "\">" +
@@ -208,7 +211,8 @@ var indexer = (function () {
     //Not using figure and figcaption because a pic is not a figure and might
     //want audio in addition to a text label.  Simple div layout.
     function picBlockHTML (pb, idx, pre) {
-        var src = "", html = "";
+        var html = "";
+        var src = "";
         //console.log("picBlockHTML: " + pb.base);
         if(pb.stat.isDirectory()) {
             if(pb.base.indexOf("_xsec_") >= 0) {
@@ -239,7 +243,9 @@ var indexer = (function () {
                     "</a></div>";
                 html += endSection("subdirdiv"); } }
         else {
-            src = pb.img? (pre + pb.base + "." + pb.img) : "";
+            src = (pb.img? (pre + pb.base + "." + pb.img) : "");
+            if(src.startsWith(picsdir)) {
+                src = src.slice(picsdir.length + 1); }
             html = startSection();  //verify section started
             if(src) {
                 html += "<div class=\"picblockdiv\">\n"; 
@@ -269,6 +275,7 @@ var indexer = (function () {
 
     function getIndexHTML (title, pbs, contentonly, secb) {
         var html = "";
+        //console.log("getIndexHTML title: " + title + ", pbs length: " + pbs.length + ", contentonly: " + contentonly + ", secb: " + secb);
         if(!contentonly) {  //fresh file start
             if(opts.titlehtml) {
                 //console.log("reading titlehtml: " + secb + opts.titlehtml);
@@ -322,7 +329,8 @@ var indexer = (function () {
 
 
     function makeIndex (parpb, pbs, contentonly, secb) {
-        var html = "", pgt = getPageTitle(parpb.path);
+        var html = "";
+        var pgt = getPageTitle(parpb.path);
         secb = secb || parpb.path + "/";
         if(!contentonly) {
             html += "<!doctype html>\n" +
@@ -457,13 +465,12 @@ var indexer = (function () {
 
 
     function folderNameSort (a, b) {
-        var n1, n2;
         if(a.base === opts.after) {
             return 1; }
         if(b.base === opts.after) {
             return -1; }
-        n1 = a.base.toLowerCase();
-        n2 = b.base.toLowerCase();
+        const n1 = a.base.toLowerCase();
+        const n2 = b.base.toLowerCase();
         if(n1 < n2) { return -1 * opts.sort; }
         if(n1 > n2) { return 1 * opts.sort; }
         return 0;
@@ -471,11 +478,12 @@ var indexer = (function () {
 
 
     function processTree (parpb, contentonly, secb) {
-        var html, pbd = {}, pbs = [], dirlist;
+        var pbd = {};  //pic block dictionary
+        var pbs = [];  //pic blocks array
         if(!isIndexableFilePath(parpb.path)) {
             console.log("no index: " + parpb.path);
             return ""; }
-        dirlist = fs.readdirSync(parpb.path);
+        const dirlist = fs.readdirSync(parpb.path);
         if(!dirlist || !dirlist.length) {
             console.log("no dir " + parpb.path);
             return ""; }
@@ -483,10 +491,9 @@ var indexer = (function () {
         readOptionOverrides(parpb.path);
         //console.log(parpb.path + ": " + dirlist.length + " files");
         dirlist.forEach(function (fname) {
-            var bn, pb;
-            bn = getBaseName(fname);
+            var bn = getBaseName(fname);
             if(bn) {  //not a hidden file
-                pb = pbd[bn] || {base:bn};
+                const pb = pbd[bn] || {base:bn};
                 pbd[bn] = pb;
                 addFileToBlock(pb, parpb.path, fname); } });
         Object.keys(pbd).forEach(function (bn) {
@@ -498,7 +505,7 @@ var indexer = (function () {
         noteFolderDecoratorFiles(pbs);
         // pbs.forEach(function (pb, idx) {
         //     console.log("processTree " + idx + ": " + pb.base); });
-        html = makeIndex(parpb, pbs, contentonly, secb);
+        const html = makeIndex(parpb, pbs, contentonly, secb);
         pbs.forEach(function (pb) {
             if(pb.stat.isDirectory() && (pb.base.indexOf("_xsec_") < 0) &&
                                         (pb.base.indexOf("_orgf_") < 0) &&
@@ -509,18 +516,18 @@ var indexer = (function () {
 
 
     function run (argv) {
-        var root = argv[1],
-            pdir = argv[2],
-            scriptname = "make_index_files.js";
-        if(pdir && pdir.indexOf("-dyn") === 0) {
+        picsdir = argv[2];
+        if(picsdir && picsdir.indexOf("-dyn") === 0) {
             mode = "dynamic";
-            pdir = argv[3]; }
+            picsdir = argv[3]; }
+        const root = argv[1];
+        const scriptname = "make_index_files.js";
         jsdir = root.slice(0, -1 * scriptname.length);
-        pdir = pdir || jsdir + "pics";
-        console.log("jsdir: " + jsdir);
-        console.log(" pdir: " + pdir);
-        console.log(" mode: " + mode);
-        processTree({path:pdir});
+        picsdir = picsdir || jsdir + "pics";
+        console.log("  jsdir: " + jsdir);
+        console.log("picsdir: " + picsdir);
+        console.log("   mode: " + mode);
+        processTree({path:picsdir});
     }
         
 
