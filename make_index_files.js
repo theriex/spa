@@ -208,6 +208,22 @@ var indexer = (function () {
     }
 
 
+    function isOrgFolderName (ofn) {
+        return (ofn.endsWith("_xsec_") ||
+                ofn.endsWith("_orgf_"));
+    }
+
+
+    function makeRelative (src) {
+        var pes = src.split("/");
+        var idx = pes.findIndex((pe) => isOrgFolderName(pe));
+        if(idx < 0) {
+            idx = pes.length - 1; }
+        pes = pes.slice(idx);
+        return pes.join("/");
+    }
+
+
     //Not using figure and figcaption because a pic is not a figure and might
     //want audio in addition to a text label.  Simple div layout.
     function picBlockHTML (pb, idx, pre) {
@@ -242,10 +258,9 @@ var indexer = (function () {
                     "<a href=\"" + pre + pb.base + "/index.html\">" + pb.base +
                     "</a></div>";
                 html += endSection("subdirdiv"); } }
-        else {
+        else {  //not a directory, write html for pic
             src = (pb.img? (pre + pb.base + "." + pb.img) : "");
-            if(src.startsWith(picsdir)) {
-                src = src.slice(picsdir.length + 1); }
+            src = makeRelative(src);
             html = startSection();  //verify section started
             if(src) {
                 html += "<div class=\"picblockdiv\">\n"; 
