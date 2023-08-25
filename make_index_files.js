@@ -254,8 +254,9 @@ var indexer = (function () {
                 html += processTree(pb, html, pb.path + "/"); }
             else {
                 html = startSection(pb.path, "subdirsectdiv");
+                const ip = makeRelative(pre + pb.base)
                 html += "<div class=\"subdirdiv\">" +
-                    "<a href=\"" + pre + pb.base + "/index.html\">" + pb.base +
+                    "<a href=\"" + ip + "/index.html\">" + pb.base +
                     "</a></div>";
                 html += endSection("subdirdiv"); } }
         else {  //not a directory, write html for pic
