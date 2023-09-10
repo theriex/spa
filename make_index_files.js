@@ -260,15 +260,22 @@ var indexer = (function () {
                     "</a></div>";
                 html += endSection("subdirdiv"); } }
         else {  //not a directory, write html for pic
-            src = (pb.img? (pre + pb.base + "." + pb.img) : "");
-            src = makeRelative(src);
             html = startSection();  //verify section started
-            if(src) {
+            if(pb.img) {
+                src = makeRelative(pre + pb.base + "." + pb.img);
                 html += "<div class=\"picblockdiv\">\n"; 
                 html += "  <div class=\"pbimgdiv\" id=\"pbi" + idx + "\">\n";
                 html += "    <img src=\"" + src + "\"/></div>\n";
                 html += getPicBlockSuppHTML(pb, idx, pre);
-                html += "</div> <!-- picblockdiv -->"; }
+                html += "</div>"; }
+            else if(pb.vid) {
+                src = makeRelative(pre + pb.base + "." + pb.vid);
+                html += "<div class=\"vidblockdiv\">\n";
+                html += "  <div class=\"pbviddiv\" id=\"pbi" + idx + "\">\n";
+                html += "    <video src=\"" + src + "\" width=\"300\"" +
+                    " controls/></div>\n";
+                html += getPicBlockSuppHTML(pb, idx, pre);
+                html += "</div>"; }
             else {
                 html += getPicBlockSuppHTML(pb, idx, pre); } }
         return html + "\n";
@@ -545,7 +552,7 @@ var indexer = (function () {
         console.log("   mode: " + mode);
         processTree({path:picsdir});
     }
-        
+
 
     return {
         run: function (argv) { run(argv); }
