@@ -12,7 +12,7 @@ var app = (function () {
         evt.preventDefault();
         evt.stopPropagation();
         if(!img.style.maxHeight) {
-            img.style.maxHeight = "100%";
+            img.style.maxHeight = "95vh";
             img.style.maxWidth = "100%"; }
         else {
             img.style.maxHeight = null;
